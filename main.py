@@ -27,7 +27,6 @@ def update_voice_channel_name(version_number):
 
 def send_to_discord_embed(description, filename):
     try:
-        # DEĞİŞİKLİK: Link metinleri orijinal haline döndü, URL sabit kaldı
         static_telegram_link = "https://web.telegram.org/k/#@hanbot_never_die"
         
         embed_data = {
@@ -39,7 +38,7 @@ def send_to_discord_embed(description, filename):
               { "name": "✅ Status: New Version Detected", "value": "A new version of Hanbot has been released. Use the link below to download.", "inline": False },
               { "name": "📁 File Name", "value": f"`{filename}`", "inline": False },
               { "name": "📋 Release Notes", "value": description or "No specific notes provided.", "inline": False },
-              { "name": "⬇️ Download Link", "value": f"[Click here to download from Telegram]({static_telegram_link})", "inline": False } # METİN DÜZELTİLDİ
+              { "name": "⬇️ Download Link", "value": f"[Click here to download from Telegram]({static_telegram_link})", "inline": False }
             ],
             "footer": { "text": "Hanbot Watcher" },
             "timestamp": datetime.datetime.utcnow().isoformat()
@@ -52,35 +51,30 @@ def send_to_discord_embed(description, filename):
     except Exception as e: print(f"Hata: {e}")
 
 async def main():
-    print("SON TEST MODU BAŞLATILDI...")
+    print("Normal mod başlatıldı: Son 5 dakikadaki yeni mesajlar kontrol edilecek...")
     async with TelegramClient(StringSession(SESSION_STRING), 12345, 'dummy') as client:
-        print(f"'{SOURCE_CHANNEL}' kanalına bağlanıldı...")
-        
-        message_to_process = None
-        async for message in client.iter_messages(SOURCE_CHANNEL, limit=20):
-            if message and message.document:
-                print(f"İşlenecek mesaj bulundu. Mesaj ID: {message.id}")
-                message_to_process = message
-                break
-        
-        if message_to_process:
-            filename = message_to_process.document.attributes[-1].file_name
-            description_text = message_to_process.text
-            print(f"Test için dosya işleniyor: {filename}")
+        print(f"'{SOURCE_CHANNEL}' kanalı kontrol ediliyor...")
+        time_threshold = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(minutes=6)
 
-            match = re.search(r'\((\d{2,}\.\d{2,}\.\d{3,}\.\d{4,})\)', description_text)
-            if match:
-                version = match.group(1)
-                print(f"Versiyon numarası bulundu: {version}")
-                update_voice_channel_name(version)
-            else:
-                print("Mesajda versiyon numarası bulunamadı.")
-            
-            send_to_discord_embed(description_text, filename)
-        else:
-            print("Son 20 mesajda dosya içeren bir mesaj bulunamadı.")
-            
-    print("Test tamamlandı.")
+        async for message in client.iter_messages(SOURCE_CHANNEL, limit=10):
+            if message.date > time_threshold and message.document:
+                filename = message.document.attributes[-1].file_name
+                description_text = message.text
+                print(f"Yeni dosya bulundu: {filename}")
+
+                match = re.search(r'\((\d{2,}\.\d{2,}\.\d{3,}\.\d{4,})\)', description_text)
+                if match:
+                    version = match.group(1)
+                    print(f"Versiyon numarası bulundu: {version}")
+                    update_voice_channel_name(version)
+                else:
+                    print("Mesajda versiyon numarası bulunamadı.")
+                
+                send_to_discord_embed(description_text, filename)
+            elif message.date <= time_threshold:
+                print("Daha eski mesajlara ulaşıldı, kontrol durduruluyor.")
+                break
+    print("İşlem tamamlandı.")
 
 if __name__ == "__main__":
     asyncio.run(main())
