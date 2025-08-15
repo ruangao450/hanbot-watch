@@ -27,7 +27,6 @@ def update_voice_channel_name(version_number):
 
 def send_to_discord_embed(description, filename, message_link):
     try:
-        # DÜZENLEME: "@everyone" etiketi eklendi
         embed_data = {
           "content": "@everyone", # HERKESİ ETİKETLEYEN SATIR
           "embeds": [{
@@ -50,7 +49,7 @@ def send_to_discord_embed(description, filename, message_link):
     except Exception as e: print(f"Hata: {e}")
 
 async def main():
-    print("SON TEST MODU BAŞLATILDI: Son dosya içeren mesaj işlenecek ve @everyone etiketi atılacak...")
+    print("SON TEST MODU BAŞLATILDI: Son dosya işlenecek, ses kanalı güncellenecek ve @everyone etiketi atılacak...")
     async with TelegramClient(StringSession(SESSION_STRING), 12345, 'dummy') as client:
         print(f"'{SOURCE_CHANNEL}' kanalına bağlanıldı...")
         
@@ -71,9 +70,7 @@ async def main():
             if match:
                 version = match.group(1)
                 print(f"Versiyon numarası bulundu: {version}")
-                # Hız sınırına takılmamak için bu testte kanal adını güncellemeyi kapatalım
-                # update_voice_channel_name(version)
-                print("NOT: Hız sınırını aşmamak için bu testte ses kanalı güncellenmeyecektir.")
+                update_voice_channel_name(version) # Ses kanalı güncellemesi tekrar aktif!
             else:
                 print("Mesajda versiyon numarası bulunamadı.")
             
