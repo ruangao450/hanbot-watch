@@ -25,18 +25,21 @@ def update_voice_channel_name(version_number):
         else: print(f"Kanal adı güncellenirken hata oluştu: {response.status_code} - {response.text}")
     except Exception as e: print(f"API isteği sırasında hata: {e}")
 
-def send_to_discord_embed(description, filename, message_link):
+def send_to_discord_embed(description, filename):
     try:
+        # DEĞİŞİKLİK: Link sabitlendi ve başlık güncellendi
+        static_telegram_link = "https://web.telegram.org/k/#@hanbot_never_die"
+        
         embed_data = {
-          "content": "@everyone", # HERKESİ ETİKETLEYEN SATIR
+          "content": "@everyone",
           "embeds": [{
-            "title": "🛡️ Hanbot Version Watch (FINAL TEST)",
+            "title": "🤖 Hanbot Update Watcher", # BAŞLIK GÜNCELLENDİ
             "color": 3447003,
             "fields": [
               { "name": "✅ Status: New Version Detected", "value": "A new version of Hanbot has been released. Use the link below to download.", "inline": False },
               { "name": "📁 File Name", "value": f"`{filename}`", "inline": False },
               { "name": "📋 Release Notes", "value": description or "No specific notes provided.", "inline": False },
-              { "name": "⬇️ Download Link", "value": f"[Click here to download from Telegram]({message_link})", "inline": False }
+              { "name": "⬇️ Go to Channel", "value": f"[Click here to go to the channel]({static_telegram_link})", "inline": False } # LİNK SABİTLENDİ
             ],
             "footer": { "text": "Hanbot Watcher" },
             "timestamp": datetime.datetime.utcnow().isoformat()
@@ -45,11 +48,11 @@ def send_to_discord_embed(description, filename, message_link):
         
         response = requests.post(DISCORD_WEBHOOK_URL, json=embed_data)
         if response.status_code >= 400: print(f"Discord Hata: {response.text}")
-        else: print("Embed mesajı ve @everyone etiketi başarıyla Discord'a gönderildi.")
+        else: print("Embed mesajı başarıyla Discord'a gönderildi.")
     except Exception as e: print(f"Hata: {e}")
 
 async def main():
-    print("SON TEST MODU BAŞLATILDI: Son dosya işlenecek, ses kanalı güncellenecek ve @everyone etiketi atılacak...")
+    print("SON TEST MODU BAŞLATILDI...")
     async with TelegramClient(StringSession(SESSION_STRING), 12345, 'dummy') as client:
         print(f"'{SOURCE_CHANNEL}' kanalına bağlanıldı...")
         
@@ -63,18 +66,17 @@ async def main():
         if message_to_process:
             filename = message_to_process.document.attributes[-1].file_name
             description_text = message_to_process.text
-            message_link = f"https://t.me/{SOURCE_CHANNEL}/{message_to_process.id}"
             print(f"Test için dosya işleniyor: {filename}")
 
             match = re.search(r'\((\d{2,}\.\d{2,}\.\d{3,}\.\d{4,})\)', description_text)
             if match:
                 version = match.group(1)
                 print(f"Versiyon numarası bulundu: {version}")
-                update_voice_channel_name(version) # Ses kanalı güncellemesi tekrar aktif!
+                update_voice_channel_name(version)
             else:
                 print("Mesajda versiyon numarası bulunamadı.")
             
-            send_to_discord_embed(description_text, filename, message_link)
+            send_to_discord_embed(description_text, filename)
         else:
             print("Son 20 mesajda dosya içeren bir mesaj bulunamadı.")
             
