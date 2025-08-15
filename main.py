@@ -38,16 +38,17 @@ def send_to_discord_embed(description, filename, file_path):
         if os.path.exists(file_path): os.remove(file_path)
 
 async def main():
-    print("İşlem başlatıldı...")
+    print("TEST MODU BAŞLATILDI: Son dosya içeren mesaj işlenecek...")
     async with TelegramClient(StringSession(SESSION_STRING), 12345, 'dummy') as client:
         print(f"'{SOURCE_CHANNEL}' kanalı kontrol ediliyor...")
-        time_threshold = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(minutes=6)
-
+        
+        message_found = False
         async for message in client.iter_messages(SOURCE_CHANNEL, limit=10):
-            if message.date > time_threshold and message.document:
+            # GEÇİCİ DEĞİŞİKLİK: Zaman kontrolü kaldırıldı
+            if message.document:
                 filename = message.document.attributes[-1].file_name
                 description_text = message.text
-                print(f"Yeni dosya bulundu: {filename}")
+                print(f"Test için yeni dosya bulundu: {filename}")
 
                 match = re.search(r'\((\d{2,}\.\d{2,}\.\d{3,}\.\d{4,})\)', description_text)
                 if match:
@@ -59,10 +60,13 @@ async def main():
                 
                 file_path = await message.download_media(file="./")
                 send_to_discord_embed(description_text, filename, file_path)
-            elif message.date <= time_threshold:
-                print("Daha eski mesajlara ulaşıldı, kontrol durduruluyor.")
-                break
-    print("İşlem tamamlandı.")
+                message_found = True
+                break # Dosyayı bulduktan sonra döngüyü durdur
+        
+        if not message_found:
+            print("Son 10 mesajda dosya içeren bir mesaj bulunamadı.")
+            
+    print("Test tamamlandı.")
 
 if __name__ == "__main__":
     asyncio.run(main())
