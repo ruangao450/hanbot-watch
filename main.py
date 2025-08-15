@@ -27,19 +27,19 @@ def update_voice_channel_name(version_number):
 
 def send_to_discord_embed(description, filename):
     try:
-        # DEĞİŞİKLİK: Link sabitlendi ve başlık güncellendi
+        # DEĞİŞİKLİK: Link metinleri orijinal haline döndü, URL sabit kaldı
         static_telegram_link = "https://web.telegram.org/k/#@hanbot_never_die"
         
         embed_data = {
           "content": "@everyone",
           "embeds": [{
-            "title": "🤖 Hanbot Update Watcher", # BAŞLIK GÜNCELLENDİ
+            "title": "🤖 Hanbot Update Watcher",
             "color": 3447003,
             "fields": [
               { "name": "✅ Status: New Version Detected", "value": "A new version of Hanbot has been released. Use the link below to download.", "inline": False },
               { "name": "📁 File Name", "value": f"`{filename}`", "inline": False },
               { "name": "📋 Release Notes", "value": description or "No specific notes provided.", "inline": False },
-              { "name": "⬇️ Go to Channel", "value": f"[Click here to go to the channel]({static_telegram_link})", "inline": False } # LİNK SABİTLENDİ
+              { "name": "⬇️ Download Link", "value": f"[Click here to download from Telegram]({static_telegram_link})", "inline": False } # METİN DÜZELTİLDİ
             ],
             "footer": { "text": "Hanbot Watcher" },
             "timestamp": datetime.datetime.utcnow().isoformat()
