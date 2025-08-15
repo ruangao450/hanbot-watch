@@ -1,0 +1,32 @@
+name: Hanbot Update Watcher
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+jobs:
+  run-script:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install telethon requests
+
+      - name: Run Python script
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          TELEGRAM_SESSION_STRING: ${{ secrets.TELEGRAM_SESSION_STRING }}
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+          VOICE_CHANNEL_ID: ${{ secrets.VOICE_CHANNEL_ID }}
+          TELEGRAM_SOURCE_CHANNEL: ${{ secrets.TELEGRAM_SOURCE_CHANNEL }}
+        run: python main.py
